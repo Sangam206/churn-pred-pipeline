@@ -91,18 +91,11 @@ def data_splitting(df):
     y_train.to_csv(os.path.join(mk_dir,"y_train.csv"),index=False)
     x_test.to_csv(os.path.join(mk_dir,"x_test.csv"),index=False)
     y_test.to_csv(os.path.join(mk_dir,"y_test.csv"),index=False)
-    return x_train,y_train,x_test,y_test 
+    return x_train,x_train,y_train,y_test 
 
     
 
 
-df=load_data('D:\customer churn\dataset\ecommerce_customer_churn_dataset.csv')
-# print(df.head(3))
-clean=data_cleaning(df)
-print(df.head(3))
-print(clean.isnull().sum())
-split=data_splitting(df)
-# print(split)
 
 
 

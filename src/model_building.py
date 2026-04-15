@@ -1,8 +1,11 @@
-import pandas as pd  
-import numpy as np  
+from sklearn.ensemble import RandomForestClassifier
 import os 
 import logging
-from src.data_injection import data_splitting
+
+# handaler
+# formatter
+# attach formater
+# add handeler
 
 mk_dir = "log"
 os.makedirs(mk_dir, exist_ok=True)
@@ -32,4 +35,5 @@ logger.addHandler(console)
 logger.addHandler(file_han)
 
 
-def 
+
+def model_build()
