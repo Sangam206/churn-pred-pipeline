@@ -38,7 +38,7 @@ def load_data(path):
         logger.debug("data loded successfully")
         return df
     except Exception as e:
-        logger.error(f"Data is not loading: {e}")
+        logger.error(f"error occured: {e}")
         raise
 
 
@@ -78,20 +78,22 @@ def data_cleaning (df):
         return df
     
     except Exception as e:
-        logger.error("data is not cleaning ")
+        logger.error("error occured:{e}")
 
 
 def data_splitting(df):
+    logger.debug("data splitting start")
     mk_dir='splitting data'
     os.makedirs(mk_dir,exist_ok=True)
     x=df.drop(columns='Churned')
     y=df['Churned']
-    x_train,y_train,x_test,y_test=train_test_split(x,y,test_size=0.3,random_state=42)
+    x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.3,random_state=42)
     x_train.to_csv(os.path.join(mk_dir,"x_train.csv"),index=False)
     y_train.to_csv(os.path.join(mk_dir,"y_train.csv"),index=False)
     x_test.to_csv(os.path.join(mk_dir,"x_test.csv"),index=False)
     y_test.to_csv(os.path.join(mk_dir,"y_test.csv"),index=False)
-    return x_train,x_train,y_train,y_test 
+    logger.debug("data splitting done")
+    return x_train,x_test,y_train,y_test 
 
     
 
