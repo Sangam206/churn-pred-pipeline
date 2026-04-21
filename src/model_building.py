@@ -172,7 +172,7 @@ def model_training(x_train, y_train, best_par):
 
         xgb.fit(x_train, y_train)
 
-        # metrics folder
+        
         mk_dir = "train_metrics"
         os.makedirs(mk_dir, exist_ok=True)
 
