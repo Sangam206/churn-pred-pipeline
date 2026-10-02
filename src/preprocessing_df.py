@@ -56,7 +56,15 @@ def encoding_cat (x_train,x_test):
 
         x_train.to_csv(os.path.join(mk_dir,"x_train.csv"))
         x_test.to_csv(os.path.join(mk_dir,"x_test.csv"))
-        logger.debug("successfully encoding")
+        
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        preprocessor_path = os.path.join(base_dir, "model", "preprocessor.pkl")
+        os.makedirs(os.path.dirname(preprocessor_path), exist_ok=True)
+        import pickle
+        with open(preprocessor_path, "wb") as f:
+            pickle.dump(ct, f)
+
+        logger.debug("successfully encoding and saved preprocessor")
 
         return x_train,x_test
     except Exception as e:

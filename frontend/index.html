@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Churn Predictor</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f4f6f9;
+      color: #333333;
+      padding: 20px;
+    }
+
+    .header {
+      max-width: 1000px;
+      margin: 0 auto 20px auto;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      color: #1a202c;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 15px;
+      color: #718096;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .card h2 {
+      font-size: 18px;
+      color: #2d3748;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #4a5568;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      font-size: 14px;
+      background-color: #fff;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #3182ce;
+      box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
+    }
+
+    .preset-buttons {
+      margin-bottom: 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-preset {
+      background: #edf2f7;
+      border: 1px solid #cbd5e0;
+      color: #4a5568;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-preset:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background-color: #3182ce;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .btn-submit:hover {
+      background-color: #2b6cb0;
+    }
+
+    /* Output Card */
+    .result-box {
+      text-align: center;
+      padding: 20px 10px;
+    }
+
+    .prob-number {
+      font-size: 42px;
+      font-weight: bold;
+      color: #2b6cb0;
+      margin: 10px 0;
+    }
+
+    .result-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .badge-low {
+      background-color: #c6f6d5;
+      color: #22543d;
+    }
+
+    .badge-high {
+      background-color: #fed7d7;
+      color: #742a2a;
+    }
+
+    .info-list {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #718096;
+      line-height: 1.8;
+    }
+
+    .info-list div {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #edf2f7;
+      padding: 6px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Customer Churn Predictor</h1>
+    <p>Enter customer details below to calculate churn probability</p>
+  </div>
+
+  <div class="container">
+    
+    <!-- Input Form -->
+    <div class="card">
+      <h2>Customer Features</h2>
+      
+      <div class="preset-buttons">
+        <span style="font-size: 12px; color: #718096; align-self: center;">Sample Presets:</span>
+        <button class="btn-preset" onclick="loadPreset('high')">High Risk</button>
+        <button class="btn-preset" onclick="loadPreset('low')">Low Risk (Loyal)</button>
+        <button class="btn-preset" onclick="loadPreset('avg')">Average</button>
+      </div>
+
+      <form id="churnForm" onsubmit="predictChurn(event)">
+        <div class="form-grid">
+          
+          <div class="form-group">
+            <label>Age</label>
+            <input type="number" id="Age" value="43" required>
+          </div>
+
+          <div class="form-group">
+            <label>Gender</label>
+            <select id="Gender">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Country</label>
+            <select id="Country">
+              <option value="France">France</option>
+              <option value="USA">USA</option>
+              <option value="UK">UK</option>
+              <option value="Germany">Germany</option>
+              <option value="Canada">Canada</option>
+              <option value="Australia">Australia</option>
+              <option value="India">India</option>
+              <option value="Japan">Japan</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Membership Years</label>
+            <input type="number" step="0.1" id="Membership_Years" value="2.9" required>
+          </div>
+
+          <div class="form-group">
+            <label>Login Frequency / Mo</label>
+            <input type="number" id="Login_Frequency" value="14" required>
+          </div>
+
+          <div class="form-group">
+            <label>Avg Session Duration (min)</label>
+            <input type="number" step="0.1" id="Session_Duration_Avg" value="27.4" required>
+          </div>
+
+          <div class="form-group">
+            <label>Pages Per Session</label>
+            <input type="number" step="0.1" id="Pages_Per_Session" value="6.0" required>
+          </div>
+
+          <div class="form-group">
+            <label>Cart Abandonment Rate (%)</label>
+            <input type="number" step="0.1" id="Cart_Abandonment_Rate" value="50.6" required>
+          </div>
+
+          <div class="form-group">
+            <label>Wishlist Items</label>
+            <input type="number" id="Wishlist_Items" value="3" required>
+          </div>
+
+          <div class="form-group">
+            <label>Total Purchases</label>
+            <input type="number" id="Total_Purchases" value="9" required>
+          </div>
+
+          <div class="form-group">
+            <label>Average Order Value ($)</label>
+            <input type="number" step="0.01" id="Average_Order_Value" value="94.72" required>
+          </div>
+
+          <div class="form-group">
+            <label>Days Since Last Purchase</label>
+            <input type="number" id="Days_Since_Last_Purchase" value="34" required>
+          </div>
+
+          <div class="form-group">
+            <label>Discount Usage Rate (%)</label>
+            <input type="number" step="0.1" id="Discount_Usage_Rate" value="46.4" required>
+          </div>
+
+          <div class="form-group">
+            <label>Returns Rate</label>
+            <input type="number" step="0.1" id="Returns_Rate" value="2.0" required>
+          </div>
+
+          <div class="form-group">
+            <label>Email Open Rate (%)</label>
+            <input type="number" step="0.1" id="Email_Open_Rate" value="17.9" required>
+          </div>
+
+          <div class="form-group">
+            <label>Customer Service Calls</label>
+            <input type="number" id="Customer_Service_Calls" value="9" required>
+          </div>
+
+          <div class="form-group">
+            <label>Product Reviews Written</label>
+            <input type="number" id="Product_Reviews_Written" value="4" required>
+          </div>
+
+          <div class="form-group">
+            <label>Social Media Score</label>
+            <input type="number" step="0.1" id="Social_Media_Engagement_Score" value="16.3" required>
+          </div>
+
+          <div class="form-group">
+            <label>Mobile App Usage</label>
+            <input type="number" step="0.1" id="Mobile_App_Usage" value="20.8" required>
+          </div>
+
+          <div class="form-group">
+            <label>Payment Method Diversity</label>
+            <input type="number" id="Payment_Method_Diversity" value="1" required>
+          </div>
+
+          <div class="form-group">
+            <label>Lifetime Value ($)</label>
+            <input type="number" step="0.01" id="Lifetime_Value" value="953.33" required>
+          </div>
+
+          <div class="form-group">
+            <label>Credit Balance ($)</label>
+            <input type="number" step="0.01" id="Credit_Balance" value="2278.0" required>
+          </div>
+
+          <div class="form-group">
+            <label>Signup Quarter</label>
+            <select id="Signup_Quarter">
+              <option value="Q1">Q1</option>
+              <option value="Q2">Q2</option>
+              <option value="Q3">Q3</option>
+              <option value="Q4">Q4</option>
+            </select>
+          </div>
+
+        </div>
+
+        <button type="submit" class="btn-submit">Predict Churn Risk</button>
+      </form>
+    </div>
+
+    <!-- Prediction Results -->
+    <div class="card">
+      <h2>Prediction Output</h2>
+      
+      <div class="result-box">
+        <div style="font-size: 13px; color: #718096;">Estimated Churn Probability</div>
+        <div class="prob-number" id="probVal">--%</div>
+        <div id="badge" class="result-badge badge-low">Awaiting Calculation</div>
+      </div>
+
+      <div class="info-list">
+        <div>
+          <span>Model Type:</span>
+          <strong style="color: #2d3748;">XGBoost</strong>
+        </div>
+        <div>
+          <span>Confidence:</span>
+          <strong id="confVal" style="color: #2d3748;">--</strong>
+        </div>
+        <div>
+          <span>Prediction Status:</span>
+          <strong id="statusVal" style="color: #2d3748;">--</strong>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const presets = {
+      high: {
+        Age: 58, Gender: "Female", Country: "USA", Membership_Years: 0.5, Signup_Quarter: "Q4",
+        Login_Frequency: 2, Session_Duration_Avg: 5.2, Pages_Per_Session: 1.5, Mobile_App_Usage: 3.1,
+        Social_Media_Engagement_Score: 4.0, Total_Purchases: 1, Average_Order_Value: 22.50,
+        Days_Since_Last_Purchase: 120, Lifetime_Value: 45.0, Credit_Balance: 0.0,
+        Cart_Abandonment_Rate: 88.5, Discount_Usage_Rate: 95.0, Customer_Service_Calls: 12,
+        Returns_Rate: 6.5, Wishlist_Items: 0, Email_Open_Rate: 5.0, Product_Reviews_Written: 0,
+        Payment_Method_Diversity: 1
+      },
+      low: {
+        Age: 34, Gender: "Female", Country: "France", Membership_Years: 5.5, Signup_Quarter: "Q1",
+        Login_Frequency: 28, Session_Duration_Avg: 45.0, Pages_Per_Session: 12.0, Mobile_App_Usage: 35.0,
+        Social_Media_Engagement_Score: 28.5, Total_Purchases: 32, Average_Order_Value: 185.00,
+        Days_Since_Last_Purchase: 4, Lifetime_Value: 4500.0, Credit_Balance: 550.0,
+        Cart_Abandonment_Rate: 12.0, Discount_Usage_Rate: 15.0, Customer_Service_Calls: 1,
+        Returns_Rate: 0.5, Wishlist_Items: 14, Email_Open_Rate: 75.0, Product_Reviews_Written: 12,
+        Payment_Method_Diversity: 3
+      },
+      avg: {
+        Age: 43, Gender: "Male", Country: "France", Membership_Years: 2.9, Signup_Quarter: "Q1",
+        Login_Frequency: 14, Session_Duration_Avg: 27.4, Pages_Per_Session: 6.0, Mobile_App_Usage: 20.8,
+        Social_Media_Engagement_Score: 16.3, Total_Purchases: 9, Average_Order_Value: 94.72,
+        Days_Since_Last_Purchase: 34, Lifetime_Value: 953.33, Credit_Balance: 2278.0,
+        Cart_Abandonment_Rate: 50.6, Discount_Usage_Rate: 46.4, Customer_Service_Calls: 9,
+        Returns_Rate: 2.0, Wishlist_Items: 3, Email_Open_Rate: 17.9, Product_Reviews_Written: 4,
+        Payment_Method_Diversity: 1
+      }
+    };
+
+    function loadPreset(key) {
+      const data = presets[key];
+      for (let field in data) {
+        const input = document.getElementById(field);
+        if (input) input.value = data[field];
+      }
+      predictChurn();
+    }
+
+    async function predictChurn(e) {
+      if (e) e.preventDefault();
+      
+      const fields = [
+        "Age", "Gender", "Country", "Membership_Years", "Login_Frequency",
+        "Session_Duration_Avg", "Pages_Per_Session", "Cart_Abandonment_Rate",
+        "Wishlist_Items", "Total_Purchases", "Average_Order_Value",
+        "Days_Since_Last_Purchase", "Discount_Usage_Rate", "Returns_Rate",
+        "Email_Open_Rate", "Customer_Service_Calls", "Product_Reviews_Written",
+        "Social_Media_Engagement_Score", "Mobile_App_Usage",
+        "Payment_Method_Diversity", "Lifetime_Value", "Credit_Balance",
+        "Signup_Quarter"
+      ];
+
+      const body = {};
+      fields.forEach(f => {
+        const val = document.getElementById(f).value;
+        body[f] = (f === "Gender" || f === "Country" || f === "Signup_Quarter") ? val : parseFloat(val);
+      });
+
+      try {
+        const res = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        if (!res.ok) throw new Error("API error");
+
+        const data = await res.json();
+        const probPct = (data.churn_probability * 100).toFixed(1);
+
+        document.getElementById('probVal').innerText = `${probPct}%`;
+        document.getElementById('confVal').innerText = data.confidence;
+        document.getElementById('statusVal').innerText = data.churned ? "Will Churn" : "Will Retain";
+
+        const badge = document.getElementById('badge');
+        if (data.churned) {
+          badge.className = "result-badge badge-high";
+          badge.innerText = "High Churn Risk";
+        } else {
+          badge.className = "result-badge badge-low";
+          badge.innerText = "Low Churn Risk";
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    window.onload = predictChurn;
+  </script>
+</body>
+</html>
